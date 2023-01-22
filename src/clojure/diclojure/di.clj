@@ -44,8 +44,9 @@
       (.set field java-object (resolveDependency dependencyResolver (.getType field))))))
 
 (defn processJavaObject [java-object dependencyResolver]
-  (let [postConstruct (callPostConstrucIfPresent java-object)
+  (let [
         inject (injectFields java-object dependencyResolver)
+        postConstruct (callPostConstrucIfPresent java-object)
         ]))
 
 (defprotocol DependencyProvider
@@ -94,7 +95,12 @@
 
   DependencyResolver
   (resolveDependency [this key]
-    (getDependency (get registry key) this))
+    (let [dependencyProvider (get registry key)]
+      (if (= nil dependencyProvider)
+        (println key)
+        (getDependency dependencyProvider this))
+      )
+    )
   )
 
 
@@ -120,6 +126,8 @@
   (postConstruct [this] (println "post construction"))
   )
 
+(defn newDIContainer [] (DIContainer. {}))
+
 (defn test []
   (-> (DIContainer. {})
       (registerSingleton :string1 (fn [] "test string 1") '())
@@ -131,5 +139,5 @@
       (.testMethod2)
       ))
 
-(test)
+;(test)
 
